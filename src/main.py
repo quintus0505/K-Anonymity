@@ -29,4 +29,4 @@ def main(algorithm='Mondrian', k=5, maxsup=20):
 
 
 if __name__ == '__main__':
-    main(algorithm='Mondrian', k=5, maxsup=50)
+    main()

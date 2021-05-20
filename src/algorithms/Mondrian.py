@@ -41,8 +41,8 @@ class Mondrian(BaseAlgorithm):
                 occupation_list.append(self.data_set['occupation'][j])
         self.df = pd.DataFrame(data=self.data_set)
 
-        self.total_age_num = max(self.data_set['age'])+1 - min(self.data_set['age'])
-        self.total_edu_num = max(self.data_set['education_num'])+1 - min(self.data_set['education_num'])
+        self.total_age_num = max(self.data_set['age']) + 1 - min(self.data_set['age'])
+        self.total_edu_num = max(self.data_set['education_num']) + 1 - min(self.data_set['education_num'])
 
     def process(self):
         """
@@ -64,24 +64,26 @@ class Mondrian(BaseAlgorithm):
             process_list = copy.deepcopy(new_process_list)
             new_process_list.clear()
             count = 0
-            print("process list len:{}".format(len(process_list)))
-            for data_frame in process_list:
-                count += len(data_frame)
-            print(count)
             for data_frame in process_list:
                 success_flag = 0
                 temp_list.clear()
-                # print(data_frame.shape[0])
+
                 if choice_flag and data_frame['education_num'].max() != data_frame['education_num'].min():
-                    df_1 = data_frame[data_frame['education_num'] > data_frame['education_num'].median()]
-                    df_2 = data_frame[data_frame['education_num'] <= data_frame['education_num'].median()]
+                    data_frame.sort_values(by='education_num')
+                    # df_1 = data_frame[data_frame['education_num'] > data_frame['education_num'].median()]
+                    # df_2 = data_frame[data_frame['education_num'] <= data_frame['education_num'].median()]
+                    df_1 = data_frame[0:int(data_frame.shape[0]/2)]
+                    df_2 = data_frame[int(data_frame.shape[0]/2)+1:data_frame.shape[0]-1]
                     if len(df_1):
                         temp_list.append(df_1)
                     if len(df_2) < len(data_frame):
                         temp_list.append(df_2)
                 else:
-                    df_1 = data_frame[data_frame['age'] > data_frame['age'].median()]
-                    df_2 = data_frame[data_frame['age'] <= data_frame['age'].median()]
+                    data_frame.sort_values(by='age')
+                    # df_1 = data_frame[data_frame['age'] > data_frame['age'].median()]
+                    # df_2 = data_frame[data_frame['age'] <= data_frame['age'].median()]
+                    df_1 = data_frame[0:int(data_frame.shape[0]/2)]
+                    df_2 = data_frame[int(data_frame.shape[0]/2)+1:data_frame.shape[0]-1]
                     if len(df_1):
                         temp_list.append(df_1)
                     if len(df_2) < len(data_frame):
@@ -105,7 +107,6 @@ class Mondrian(BaseAlgorithm):
 
         end_time = time.time()
         print("processing done, with time {}".format(end_time - time_start))
-        print(self.data_num)
 
     def compute_loss_metric(self):
         """
@@ -140,8 +141,6 @@ class Mondrian(BaseAlgorithm):
         print("loss metric:{}".format(self.loss_metric))
 
     def save_data(self):
-        file_name = 'Mondrian' + '_' + str(self.k) + '.csv'
-        file_path = osp.join(DEFAULT_DATA_DIR, file_name)
         ret = self.return_list[0]
         for df in self.return_list[1:]:
             ret = pd.concat([ret, df], axis=0, ignore_index=True)

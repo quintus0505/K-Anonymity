@@ -19,7 +19,6 @@ class BaseAlgorithm(ABC):
         self.data_set = load_data()
         self.data_num = len(self.data_set['occupation'])
 
-
     @abstractmethod
     def initial_setting(self):
         """
