@@ -1,2 +1,0 @@
-Mondrian算法
-Samarati算法
