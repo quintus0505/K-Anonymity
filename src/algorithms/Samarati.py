@@ -116,7 +116,7 @@ class Samarati(BaseAlgorithm):
             print("reduction_vector:{}".format(current_reduction_vector))
             print("suppression_num:{}".format(suppression_num))
         else:
-         print("annot find a reduction method")
+            print("cannot find a reduction method")
 
         total_time = end_time - time_start
         print("total_time:{}".format(total_time))

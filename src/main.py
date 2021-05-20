@@ -12,7 +12,7 @@ from algorithms.Mondrian import Mondrian
 # @click.option('--k', type=int, default=2, help='K-Anonymity parameter k (must be 2 <= nu).')
 # @click.option('--maxsup', type=int, default=20,
 #               help='K-Anonymity algorithm Samarati parameter maxSup (must be 2 <= nu).')
-def main(algorithm='Samarati', k=5, maxsup=20):
+def main(algorithm='Mondrian', k=5, maxsup=20):
     if algorithm == 'Samarati':
         alg = Samarati(algorithm_name='Samarati', k=k, maxsup=maxsup)
         alg.load_dataset()
@@ -29,4 +29,4 @@ def main(algorithm='Samarati', k=5, maxsup=20):
 
 
 if __name__ == '__main__':
-    main(algorithm='Samarati', k=5, maxsup=50)
+    main(algorithm='Mondrian', k=5, maxsup=50)

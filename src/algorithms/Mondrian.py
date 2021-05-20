@@ -14,7 +14,7 @@ class Mondrian(BaseAlgorithm):
 
     def __init__(self, algorithm_name, k):
         super().__init__(algorithm_name, k)
-        self.occupation_list = []
+        self.df = None
         self.return_list = []
         self.return_data = []
         self.loss_metric = [0, 0]
@@ -39,14 +39,7 @@ class Mondrian(BaseAlgorithm):
             self.data_set['age'][j] = int(self.data_set['age'][j])
             if self.data_set['occupation'][j] not in occupation_list:
                 occupation_list.append(self.data_set['occupation'][j])
-        df = pd.DataFrame(data=self.data_set)
-        # for i in range(len(occupation_list)):
-        #     print(self.data_set['occupation'].count(occupation_list[i]))
-        for occupation in occupation_list:
-            index.append(occupation)
-            occupation_df = df[df['occupation'].isin(index)].reset_index()
-            index.clear()
-            self.occupation_list.append(occupation_df)
+        self.df = pd.DataFrame(data=self.data_set)
 
         self.total_age_num = max(self.data_set['age']) - min(self.data_set['age'])
         self.total_edu_num = max(self.data_set['education_num']) - min(self.data_set['education_num'])
@@ -55,11 +48,6 @@ class Mondrian(BaseAlgorithm):
         """
         processing using Mondrian method
         """
-        for occupation in self.occupation_list:
-            if occupation.shape[0] < self.k:
-                print("Cannot find a reduction method, having an occupation only contain {} people".format(
-                    occupation.shape[0]))
-                return False
         choice_flag = 0
         succe_flag = 1
         temp_list = []
@@ -67,45 +55,51 @@ class Mondrian(BaseAlgorithm):
         new_process_list = []
         print("start processing by using Mondrian")
         time_start = time.time()
-        for occupation in self.occupation_list:
+
+        new_process_list.clear()
+        new_process_list.append(self.df)
+        while True:
+            choice_flag = random.randint(0, 1)
+            process_list.clear()
+            process_list = copy.deepcopy(new_process_list)
             new_process_list.clear()
-            new_process_list.append(occupation)
-            while True:
-                choice_flag = random.randint(0, 1)
-                process_list.clear()
-                process_list = copy.deepcopy(new_process_list)
-                new_process_list.clear()
-                for data_frame in process_list:
-                    success_flag = 1
-                    temp_list.clear()
-                    # print(data_frame.shape[0])
-                    if choice_flag:
-                        df_1 = data_frame[data_frame['education_num'] > data_frame['education_num'].median()]
-                        df_2 = data_frame[data_frame['education_num'] <= data_frame['education_num'].median()]
+            count = 0
+            print("process list len:{}".format(len(process_list)))
+            for data_frame in process_list:
+                count += len(data_frame)
+            print(count)
+            for data_frame in process_list:
+                success_flag = 1
+                temp_list.clear()
+                # print(data_frame.shape[0])
+                if choice_flag:
+                    df_1 = data_frame[data_frame['education_num'] > data_frame['education_num'].median()]
+                    df_2 = data_frame[data_frame['education_num'] <= data_frame['education_num'].median()]
+                    if len(df_1):
                         temp_list.append(df_1)
+                    if len(df_2) < len(data_frame):
                         temp_list.append(df_2)
-                    else:
-                        df_1 = data_frame[data_frame['age'] > data_frame['age'].median()]
-                        df_2 = data_frame[data_frame['age'] <= data_frame['age'].median()]
+                else:
+                    df_1 = data_frame[data_frame['age'] > data_frame['age'].median()]
+                    df_2 = data_frame[data_frame['age'] <= data_frame['age'].median()]
+                    if len(df_1):
                         temp_list.append(df_1)
+                    if len(df_2) < len(data_frame):
                         temp_list.append(df_2)
 
-                    for item in temp_list:
-                        if len(item) < self.k:
-                            success_flag = 0
-                            break
-                    if success_flag == 1:
-                        for new_df in temp_list:
-                            new_process_list.append(new_df)
+                for item in temp_list:
+                    if len(item) < self.k:
+                        success_flag = 0
+                        break
+                if success_flag == 1:
+                    for new_df in temp_list:
+                        new_process_list.append(new_df)
 
-                if not new_process_list:
-                    for df in process_list:
-                        self.return_list.append(df)
-                    break
+            if not new_process_list:
+                for df in process_list:
+                    self.return_list.append(df)
+                break
 
-        for item in self.return_list:
-            item.drop('index', axis=1, inplace=True)
-            item.reset_index()
         end_time = time.time()
         print("processing done, with time {}".format(end_time - time_start))
 
@@ -132,9 +126,10 @@ class Mondrian(BaseAlgorithm):
                     new_edu_num.append(str(min_edu_num) + '-' + str(max_edu_num))
             df.iloc[:, 0] = new_age
             df.iloc[:, 1] = new_edu_num
-
-            self.loss_metric[0] += len(df) * (max_age - min_age - 1) / (self.total_age_num - 1)
-            self.loss_metric[1] += len(df) * (max_edu_num - min_edu_num - 1) / (self.total_edu_num - 1)
+            if max_age != min_age:
+                self.loss_metric[0] += len(df) * (max_age - min_age - 1) / (self.total_age_num - 1)
+            if min_edu_num != max_edu_num:
+                self.loss_metric[1] += len(df) * (max_edu_num - min_edu_num - 1) / (self.total_edu_num - 1)
 
         self.loss_metric[0] = self.loss_metric[0] / self.data_num
         self.loss_metric[1] = self.loss_metric[1] / self.data_num
