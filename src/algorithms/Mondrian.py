@@ -41,8 +41,8 @@ class Mondrian(BaseAlgorithm):
                 occupation_list.append(self.data_set['occupation'][j])
         self.df = pd.DataFrame(data=self.data_set)
 
-        self.total_age_num = max(self.data_set['age']) - min(self.data_set['age'])
-        self.total_edu_num = max(self.data_set['education_num']) - min(self.data_set['education_num'])
+        self.total_age_num = max(self.data_set['age'])+1 - min(self.data_set['age'])
+        self.total_edu_num = max(self.data_set['education_num'])+1 - min(self.data_set['education_num'])
 
     def process(self):
         """
@@ -69,10 +69,10 @@ class Mondrian(BaseAlgorithm):
                 count += len(data_frame)
             print(count)
             for data_frame in process_list:
-                success_flag = 1
+                success_flag = 0
                 temp_list.clear()
                 # print(data_frame.shape[0])
-                if choice_flag:
+                if choice_flag and data_frame['education_num'].max() != data_frame['education_num'].min():
                     df_1 = data_frame[data_frame['education_num'] > data_frame['education_num'].median()]
                     df_2 = data_frame[data_frame['education_num'] <= data_frame['education_num'].median()]
                     if len(df_1):
@@ -87,21 +87,25 @@ class Mondrian(BaseAlgorithm):
                     if len(df_2) < len(data_frame):
                         temp_list.append(df_2)
 
-                for item in temp_list:
-                    if len(item) < self.k:
-                        success_flag = 0
-                        break
+                if temp_list:
+                    success_flag = 1
+                    for item in temp_list:
+                        if len(item) < self.k:
+                            success_flag = 0
+
                 if success_flag == 1:
                     for new_df in temp_list:
                         new_process_list.append(new_df)
 
+                elif success_flag == 0:
+                    self.return_list.append(data_frame)
+
             if not new_process_list:
-                for df in process_list:
-                    self.return_list.append(df)
                 break
 
         end_time = time.time()
         print("processing done, with time {}".format(end_time - time_start))
+        print(self.data_num)
 
     def compute_loss_metric(self):
         """
@@ -139,7 +143,7 @@ class Mondrian(BaseAlgorithm):
         file_name = 'Mondrian' + '_' + str(self.k) + '.csv'
         file_path = osp.join(DEFAULT_DATA_DIR, file_name)
         ret = self.return_list[0]
-        for df in self.return_list:
+        for df in self.return_list[1:]:
             ret = pd.concat([ret, df], axis=0, ignore_index=True)
 
         save_data(algorithm=self.algorithm_name, k=self.k, data=ret)
