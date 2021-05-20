@@ -1,5 +1,5 @@
 import os.path as osp
-import pickle
+import pandas as pd
 from functools import cmp_to_key
 
 DEFAULT_DATASET_DIR = osp.join(osp.dirname(osp.dirname(osp.abspath(osp.dirname(__file__)))), 'dataset')
@@ -68,15 +68,13 @@ def save_data(algorithm, k=0, maxsup=0, data=None, data_dir=DEFAULT_DATA_DIR):
 
     file_name = None
     if algorithm == 'Samarati':
-        file_name = algorithm + '_' + str(k) + '_' + str(maxsup) + '.txt'
+        file_name = algorithm + '_' + str(k) + '_' + str(maxsup) + '.csv'
 
     elif algorithm == 'Mondrian':
-        file_name = algorithm + '_' + str(k) + '.txt'
+        file_name = algorithm + '_' + str(k) + '.csv'
 
-    with open(osp.join(data_dir, file_name), 'w') as f:
-        f.write(str(data))
-
-    f.close()
+    file_path = osp.join(DEFAULT_DATA_DIR, file_name)
+    data.to_csv(file_path, sep='\t', index=False)
 
 
 def mycmp1(i, j):
@@ -90,15 +88,43 @@ def mycmp1(i, j):
         return i[0] - j[0]
 
 
+def mycmp_age(i, j):
+    return i[0] - j[0]
+
+
+def mycmp_eduction_num(i, j):
+    return i[1] - j[1]
+
+
 if __name__ == '__main__':
-    # data_set = load_data()
-    #
-    # list = []
-    # test = dict()
-    #
-    # # for i in data_test['age']:
-    # #     if i not in list:
-    # #         list.append(i)
+    data_set = load_data()
+    data_set.pop('marital_status')
+    data_set.pop('gender')
+    data_set.pop('race')
+
+    list = []
+    test = dict()
+    data_num = len(data_set['occupation'])
+    for j in range(data_num):
+        data_set['age'][j] = int(data_set['age'][j])
+        data_set['education_num'][j] = int(data_set['education_num'][j])
+
+    df = pd.DataFrame(data=data_set)
+    df_1 = df[df['age'] > df['age'].median()]
+    df_2 = df[df['age'] <= df['age'].median()]
+    print(df_1)
+    print(df_2)
+    # test = df['age'].median()
+    # print("median {}".format(test))
+    # print(len(df))
+    # # df.groupby(df['age'] > df['age'].median())['occupation']
+    # for item in df[['age','education_num', 'occupation']].groupby(['occupation']):
+    #     list.append(item)
+    # for item in df[['age','education_num', 'occupation']].groupby(df['age'] > df['age'].median()):
+    #     print(item)
+    # print(list[1])
+    # print(len(list))
+
     # for j in range(100):
     #     list.append(
     #         [data_set['gender'][j], data_set['race'][j], data_set['marital_status'][j], data_set['age'][j]])
@@ -110,7 +136,7 @@ if __name__ == '__main__':
     # # list.sort()
     # # print(list)
 
-    hierarchy_tree = [[1, 1, 1, 1], [1, 1, 2, 0], [1, 1, 0, 2], [1, 0, 2, 1], [1, 0, 1, 2], [1, 0, 0, 3],
-                      [0, 1, 2, 1], [0, 1, 1, 2], [0, 1, 0, 3], [0, 0, 1, 3], [0, 0, 2, 2], [0, 0, 0, 4]]
-    hierarchy_tree.sort(key=cmp_to_key(mycmp1), reverse=True)
-    print(hierarchy_tree)
+    # hierarchy_tree = [[1, 1, 1, 1], [1, 1, 2, 0], [1, 1, 0, 2], [1, 0, 2, 1], [1, 0, 1, 2], [1, 0, 0, 3],
+    #                   [0, 1, 2, 1], [0, 1, 1, 2], [0, 1, 0, 3], [0, 0, 1, 3], [0, 0, 2, 2], [0, 0, 0, 4]]
+    # hierarchy_tree.sort(key=cmp_to_key(mycmp1), reverse=True)
+    # print(hierarchy_tree)

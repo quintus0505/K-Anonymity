@@ -2,6 +2,9 @@ import sys
 import time
 import copy
 from functools import cmp_to_key
+import pandas as pd
+import os.path as osp
+from utils.user_config import save_data, DEFAULT_DATA_DIR
 
 sys.path.append('../')
 from base.base_algorithm import BaseAlgorithm
@@ -113,7 +116,7 @@ class Samarati(BaseAlgorithm):
             print("reduction_vector:{}".format(current_reduction_vector))
             print("suppression_num:{}".format(suppression_num))
         else:
-         print("Cannot find a reduction method")
+         print("annot find a reduction method")
 
         total_time = end_time - time_start
         print("total_time:{}".format(total_time))
@@ -241,10 +244,9 @@ class Samarati(BaseAlgorithm):
         return loss_metric
 
     def save_data(self):
-        return_data = []
-        for j in range(self.data_num):
-            return_data.append(
-                [self.return_dataset['gender'][j], self.return_dataset['race'][j],
-                 self.return_dataset['marital_status'][j], self.return_dataset['age'][j],
-                 self.return_dataset['occupation'][j]])
-        save_data(algorithm=self.algorithm_name, k=self.k, maxsup=self.maxsup, data=return_data)
+        """
+        save data, change dict() to str(list)  (redundant?)
+        """
+
+        df = pd.DataFrame(self.return_dataset)
+        save_data(algorithm=self.algorithm_name, k=self.k, maxsup=self.maxsup, data=df)

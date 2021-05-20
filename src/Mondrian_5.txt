@@ -1,0 +1,6 @@
+age	education_num	occupation
+20-23	3-7	Priv-house-serv
+20-23	3-7	Priv-house-serv
+20-23	3-7	Priv-house-serv
+20-23	3-7	Priv-house-serv
+20-23	3-7	Priv-house-serv

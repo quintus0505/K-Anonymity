@@ -1,6 +1,7 @@
 import click
 from utils.user_config import load_data
 from algorithms.Samarati import Samarati
+from algorithms.Mondrian import Mondrian
 
 
 ################################################################################
@@ -18,8 +19,14 @@ def main(algorithm='Samarati', k=5, maxsup=20):
         alg.initial_setting()
         alg.process()
         alg.save_data()
-
+    else:
+        alg = Mondrian(algorithm_name='Mondrian', k=k)
+        alg.load_dataset()
+        alg.initial_setting()
+        alg.process()
+        alg.compute_loss_metric()
+        alg.save_data()
 
 
 if __name__ == '__main__':
-    main(algorithm='Samarati', k=3, maxsup=50)
+    main(algorithm='Samarati', k=5, maxsup=50)
