@@ -26,6 +26,8 @@ class Samarati(BaseAlgorithm):
         self.h = 0
         self.return_dataset = dict()
         self.return_loss_metric = [1, 1, 1, 1]
+        # flag for finding solution
+        self.global_flag = 0
 
     def initial_setting(self):
         """
@@ -104,17 +106,19 @@ class Samarati(BaseAlgorithm):
         print("start processing by using Samarati")
         time_start = time.time()
         while True:
-            flag, self.return_dataset, self.return_loss_metric, current_reduction_vector, current_layer, switch_height, suppression_num = self.function(
+            flag, self.return_loss_metric, current_reduction_vector, current_layer, switch_height, suppression_num = self.function(
                 current_layer, switch_height)
 
             if switch_height == 0:
                 end_time = time.time()
                 break
-        if flag:
-            print("current_layer:{}".format(current_layer))
-            print("loss_metric:{}".format(self.return_loss_metric))
-            print("reduction_vector:{}".format(current_reduction_vector))
-            print("suppression_num:{}".format(suppression_num))
+            if flag:
+                self.global_flag = 1
+                print("loss_metric:{}".format(self.return_loss_metric))
+                print("reduction_vector:{}".format(current_reduction_vector))
+                print("suppression_num:{}".format(suppression_num))
+        if self.global_flag:
+            print("find solution")
         else:
             print("cannot find a reduction method")
 
@@ -158,6 +162,7 @@ class Samarati(BaseAlgorithm):
 
             flag, suppression_key, suppression_num = self.judge(data_set=temp_data_set)
             """if find ideal reduction, return reduced dataset and loss metric"""
+
             if flag:
                 for j in range(self.data_num):
                     temp_list = [temp_data_set['gender'][j], temp_data_set['race'][j],
@@ -173,14 +178,14 @@ class Samarati(BaseAlgorithm):
                 loss_metric = self.compute_loss_metric(distance_vector, temp_data_set)
                 switch_height = switch_height = int(switch_height / 2)
                 current_layer = current_layer - switch_height
-
-                return True, temp_data_set, loss_metric, distance_vector, current_layer, switch_height, suppression_num
+                self.return_dataset = copy.deepcopy(temp_data_set)
+                return True, loss_metric, distance_vector, current_layer, switch_height, suppression_num
 
             else:
                 continue
         switch_height = switch_height = int(switch_height / 2)
         current_layer = current_layer + switch_height
-        return False, None, None, None, current_layer, switch_height, None
+        return False, None, None, current_layer, switch_height, None
 
     def judge(self, data_set):
         """
@@ -194,8 +199,8 @@ class Samarati(BaseAlgorithm):
         suppress_num = 0  # data needs to be suppressed
         for j in range(self.data_num):
             judging_set.append(
-                [data_set['gender'][j], data_set['race'][j], data_set['marital_status'][j], data_set['age'][j],
-                 data_set['occupation'][j]])
+                [data_set['gender'][j], data_set['race'][j], data_set['marital_status'][j], data_set['age'][j]
+                 ])
 
         for j in range(self.data_num):
             if judging_set[j] not in judging_key:
