@@ -138,7 +138,7 @@ class Samarati(BaseAlgorithm):
             # copy temp data set
             # print("current_layer:{} distant_vector:{}".format(current_layer, distance_vector))
             temp_data_set = copy.deepcopy(self.data_set)
-            ss_metric = [1, 1, 1, 1]
+            loss_metric = [1, 1, 1, 1]
             # reduce data set
             for i in range(distance_vector[0]):
                 for j in range(self.data_num):
@@ -166,14 +166,13 @@ class Samarati(BaseAlgorithm):
             if flag:
                 for j in range(self.data_num):
                     temp_list = [temp_data_set['gender'][j], temp_data_set['race'][j],
-                                 temp_data_set['marital_status'][j], temp_data_set['age'][j],
-                                 temp_data_set['occupation'][j]]
+                                 temp_data_set['marital_status'][j], temp_data_set['age'][j]]
                     if temp_list in suppression_key:
                         temp_data_set['gender'][j] = '*'
                         temp_data_set['race'][j] = '*'
                         temp_data_set['marital_status'][j] = '*'
                         temp_data_set['age'][j] = '*'
-                        temp_data_set['occupation'][j] = ' * '
+                        temp_data_set['occupation'][j] = '*'
 
                 loss_metric = self.compute_loss_metric(distance_vector, temp_data_set)
                 switch_height = switch_height = int(switch_height / 2)
@@ -222,26 +221,26 @@ class Samarati(BaseAlgorithm):
         :return: loss_metric, figures in this list represent the loss metric of 'gender','race',
                 'marital-status' and 'age' respectively.
         """
-        loss_metric = [0, 0, 0, 0]
+        loss_metric = [0.0, 0.0, 0.0, 0.0]
         for j in range(self.data_num):
             if (distance_vector[0] == 0 and temp_data_set['gender'][j] == '*') or distance_vector[0] == 1:
-                loss_metric[0] += 1
+                loss_metric[0] += 1.0
             if (distance_vector[1] == 0 and temp_data_set['race'][j] == '*') or distance_vector[1] == 1:
-                loss_metric[1] += 1
+                loss_metric[1] += 1.0
             if (distance_vector[2] == 0 and temp_data_set['marital_status'][j] == '*') or distance_vector[2] == 2:
-                loss_metric[2] += 1
+                loss_metric[2] += 1.0
             elif distance_vector[2] == 1:
                 if temp_data_set['marital_status'][j] != 'NM':
-                    loss_metric[2] += 1 / 6
+                    loss_metric[2] += float(1 / 6)
 
             if (distance_vector[3] == 0 and temp_data_set['age'][j] == '*') or distance_vector[3] == 4:
                 loss_metric[3] += 1
             elif distance_vector[3] == 1:
-                loss_metric[3] += 4 / 79
+                loss_metric[3] += float(4 / 79)
             elif distance_vector[3] == 2:
-                loss_metric[3] += 9 / 79
+                loss_metric[3] += float(9 / 79)
             elif distance_vector[3] == 3:
-                loss_metric[3] += 19 / 79
+                loss_metric[3] += float(19 / 79)
 
         for i in range(len(loss_metric)):
             loss_metric[i] = loss_metric[i] / self.data_num
