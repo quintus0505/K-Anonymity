@@ -1,2 +1,4 @@
 documents/*
 data/*
+.idea/*
+.vscode/*
